@@ -4,6 +4,8 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
 
+
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -11,7 +13,7 @@ app.use(express.json());
 console.log(process.env.DB_USER);
 console.log(process.env.DB_PASS);
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb'); // Import ObjectId
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.il0t7ji.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -29,6 +31,7 @@ async function run() {
         await client.connect();
 
         const serviceCollection = client.db('cardoctor').collection('services');
+        const bookingCollection = client.db('cardoctor').collection('booking');
 
         // Services related API
         app.get('/services', async (req, res) => {
@@ -39,14 +42,40 @@ async function run() {
 
         app.get('/services/:id', async (req, res) => {
             const id = req.params.id;
-            const query = { _id: new ObjectId(id) }
+            const query = { _id: new ObjectId(id) } // Corrected typo here
 
             const options = {
-                // Include only the `title` and `imdb` fields in the returned document
+                // Include only the `title` and `price` fields in the returned document
                 projection: { title: 1, price: 1, service_id: 1, img: 1 },
             };
 
             const result = await serviceCollection.findOne(query, options);
+            res.send(result);
+        });
+
+
+
+        //booking
+        app.post('/bookings', async (req, res) => {
+            const booking = req.body;
+            console.log(booking);
+            const result = await bookingCollection.insertOne(booking);
+            res.send(result);
+        });
+        //get
+        app.get('/bookings', async (req, res) => {
+            console.log(req.query.email);
+            // console.log('ttttt token', req.cookies.token)
+            console.log('user in the valid token', req.user)
+            // if(req.query.email !== req.user.email){
+            //     return res.status(403).send({message: 'forbidden access'})
+            // }
+
+            let query = {};
+            if (req.query?.email) {
+                query = { email: req.query.email }
+            }
+            const result = await bookingCollection.find(query).toArray();
             res.send(result);
         })
 
