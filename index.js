@@ -65,7 +65,7 @@ async function run() {
         //get
         app.get('/bookings', async (req, res) => {
             console.log(req.query.email);
-            // console.log('ttttt token', req.cookies.token)
+            // console.log('tt token', req.cookies.token)
             console.log('user in the valid token', req.user)
             // if(req.query.email !== req.user.email){
             //     return res.status(403).send({message: 'forbidden access'})
@@ -76,6 +76,13 @@ async function run() {
                 query = { email: req.query.email }
             }
             const result = await bookingCollection.find(query).toArray();
+            res.send(result);
+        })
+        //delete bokkings
+        app.delete('/bookings/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await bookingCollection.deleteOne(query);
             res.send(result);
         })
 
