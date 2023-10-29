@@ -16,6 +16,7 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
+
 // console.log(process.env.DB_USER);
 // console.log(process.env.DB_PASS);
 
@@ -31,6 +32,28 @@ const client = new MongoClient(uri, {
     }
 });
 
+// middlewares
+const logger = async (req, res, next) => {
+    console.log('called:', req.host, req.originalUrl)
+    next();
+}
+
+const verifyToken = async (req, res, next) => {
+    const token = req.cookies?.token;
+    console.log('value of the token in middlewire', token)
+    if (!token) {
+        return res.status(401).send({ message: 'unauthorized access' })
+    }
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).send({ message: 'unauthorized access' })
+        }
+        console.log('decoded', decoded)
+        req.user = decoded;
+        next();
+    })
+}
+
 async function run() {
     try {
         // Connect the client to the server (optional starting in v4.7)
@@ -41,7 +64,7 @@ async function run() {
 
 
         // auth related api
-        app.post('/jwt', async (req, res) => {
+        app.post('/jwt', logger, async (req, res) => {
             const user = req.body;
             console.log('user for token', user);
 
@@ -59,7 +82,7 @@ async function run() {
         })
 
         // Services related API
-        app.get('/services', async (req, res) => {
+        app.get('/services', logger, async (req, res) => {
             const cursor = serviceCollection.find();
             const result = await cursor.toArray();
             res.send(result);
@@ -88,13 +111,13 @@ async function run() {
             res.send(result);
         });
         //get
-        app.get('/bookings', async (req, res) => {
+        app.get('/bookings', logger, verifyToken, async (req, res) => {
             console.log(req.query.email);
-            console.log('tt token', req.cookies.token)
-            // console.log('user in the valid token', req.user)
-            // if(req.query.email !== req.user.email){
-            //     return res.status(403).send({message: 'forbidden access'})
-            // }
+            // console.log('tt token', req.cookies.token)
+            console.log('user in the valid token', req.user)
+            if (req.query.email !== req.user.email) {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
 
             let query = {};
             if (req.query?.email) {
