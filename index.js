@@ -39,16 +39,18 @@ async function run() {
         app.post('/jwt', async (req, res) => {
             const user = req.body;
             console.log('user for token', user);
-            res.send(user);
-            // const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
 
-            // res.cookie('token', token, {
-            //     httpOnly: true,
-            //     secure: true,
-            //     sameSite: 'none'
-            // })
-            // .send({ success: true });
+            // const token = jwt.sign(user, 'secret', { expiresIn: '1h' });
 
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'none'
+            })
+                .send({ success: true });
+            // res.send(token);
         })
 
         // Services related API
