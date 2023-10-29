@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -8,8 +9,12 @@ const port = process.env.PORT || 5000;
 
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    credentials: true
+}));
 app.use(express.json());
+app.use(cookieParser());
 
 // console.log(process.env.DB_USER);
 // console.log(process.env.DB_PASS);
@@ -85,7 +90,7 @@ async function run() {
         //get
         app.get('/bookings', async (req, res) => {
             console.log(req.query.email);
-            // console.log('tt token', req.cookies.token)
+            console.log('tt token', req.cookies.token)
             // console.log('user in the valid token', req.user)
             // if(req.query.email !== req.user.email){
             //     return res.status(403).send({message: 'forbidden access'})
