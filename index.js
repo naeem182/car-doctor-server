@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -10,8 +11,8 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-console.log(process.env.DB_USER);
-console.log(process.env.DB_PASS);
+// console.log(process.env.DB_USER);
+// console.log(process.env.DB_PASS);
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb'); // Import ObjectId
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.il0t7ji.mongodb.net/?retryWrites=true&w=majority`;
@@ -32,6 +33,23 @@ async function run() {
 
         const serviceCollection = client.db('cardoctor').collection('services');
         const bookingCollection = client.db('cardoctor').collection('booking');
+
+
+        // auth related api
+        app.post('/jwt', async (req, res) => {
+            const user = req.body;
+            console.log('user for token', user);
+            res.send(user);
+            // const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+
+            // res.cookie('token', token, {
+            //     httpOnly: true,
+            //     secure: true,
+            //     sameSite: 'none'
+            // })
+            // .send({ success: true });
+
+        })
 
         // Services related API
         app.get('/services', async (req, res) => {
@@ -66,7 +84,7 @@ async function run() {
         app.get('/bookings', async (req, res) => {
             console.log(req.query.email);
             // console.log('tt token', req.cookies.token)
-            console.log('user in the valid token', req.user)
+            // console.log('user in the valid token', req.user)
             // if(req.query.email !== req.user.email){
             //     return res.status(403).send({message: 'forbidden access'})
             // }
@@ -90,7 +108,7 @@ async function run() {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const updatedBooking = req.body;
-            console.log(updatedBooking);
+            // console.log(updatedBooking);
             const updateDoc = {
                 $set: {
                     status: updatedBooking.status
