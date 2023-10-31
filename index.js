@@ -10,7 +10,11 @@ const port = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    origin: [
+        // 'http://localhost:5173', 'http://localhost:5174'
+        'https://car-doctor-eb798.web.app',
+        'https://car-doctor-eb798.firebaseapp.com/?_gl=1*1atic40*_ga*MTc4MzU2NDg3Mi4xNjk4NTE2NDk2*_ga_CW55HF8NVT*MTY5ODczNzE0My4yLjEuMTY5ODczNzMzNC4xOS4wLjA.'
+    ],
     credentials: true
 }));
 app.use(express.json());
